@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 250" role="img" aria-label="Sclass Online Coaching">
+  <defs><linearGradient id="gold" x1="0" x2="1"><stop offset="0%" stop-color="#8d6a18"/><stop offset="30%" stop-color="#d7b04b"/><stop offset="55%" stop-color="#f6dd8b"/><stop offset="78%" stop-color="#c7952e"/><stop offset="100%" stop-color="#7a5a17"/></linearGradient></defs>
+  <path d="M106 40c-33 0-57 16-57 41 0 24 17 34 57 44 34 8 46 14 46 27 0 14-15 23-38 23-22 0-42-8-67-24l-24 33c29 20 61 30 99 30 52 0 88-25 88-67 0-35-22-52-72-64-29-7-39-11-39-22 0-10 11-18 30-18 19 0 37 6 58 19l24-31c-24-18-52-27-85-27z" fill="url(#gold)"/>
+  <text x="250" y="106" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="74" fill="url(#gold)" letter-spacing="4">SCLASS</text>
+  <text x="250" y="166" font-family="Arial, Helvetica, sans-serif" font-size="40" fill="url(#gold)" letter-spacing="8">ONLINE COACHING</text>
+</svg>

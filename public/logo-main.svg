@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" role="img" aria-label="Sclass Fitness">
+  <defs>
+    <linearGradient id="gold" x1="0" x2="1">
+      <stop offset="0%" stop-color="#8d6a18"/><stop offset="30%" stop-color="#d7b04b"/>
+      <stop offset="55%" stop-color="#f6dd8b"/><stop offset="78%" stop-color="#c7952e"/>
+      <stop offset="100%" stop-color="#7a5a17"/>
+    </linearGradient>
+  </defs>
+  <path d="M132 42c-36 0-62 18-62 44 0 26 18 36 62 47 36 9 48 14 48 28 0 15-16 25-40 25-23 0-45-8-72-26l-28 38c31 22 66 33 106 33 56 0 95-27 95-72 0-38-23-56-78-69-31-7-42-12-42-24 0-11 12-19 32-19 20 0 39 6 62 21l28-36c-26-21-56-30-91-30z" fill="url(#gold)"/>
+  <path d="M317 65h52v22c12-17 28-27 53-27 45 0 74 29 74 78v86h-52v-70c0-28-12-40-32-40s-35 13-35 40v70h-52z" fill="url(#gold)"/>
+  <path d="M520 145v-1c0-46 37-84 89-84 63 0 88 43 88 88 0 4 0 8-1 13H571c5 24 22 37 46 37 18 0 31-6 46-20l30 25c-18 22-44 36-79 36-58 0-94-34-94-94zm127-14c-3-24-17-40-38-40s-35 16-39 40z" fill="url(#gold)"/>
+  <path d="M736 65h53l29 100 32-100h44l32 100 29-100h52l-53 160h-49l-33-102-34 102h-49z" fill="url(#gold)"/>
+  <path d="M284 206h713v14H284z" fill="url(#gold)" opacity=".85"/>
+  <text x="286" y="247" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="700" letter-spacing="12" fill="url(#gold)">FITNESS</text>
+</svg>
