@@ -87,6 +87,17 @@ const db: Record<string, { unit: string; cal: number; p: number; c: number; f: n
   "chocolate crispy rice cereal": { unit: "g", cal: 4.04, p: 0.06, c: 0.85, f: 0.09 },
   "mini marshmallows": { unit: "g", cal: 3.18, p: 0.02, c: 0.79, f: 0 },
   "light butter": { unit: "g", cal: 3.6, p: 0, c: 0, f: 0.4 },
+  butter: { unit: "g", cal: 7.17, p: 0.01, c: 0.0, f: 0.81 },
+  "irish butter": { unit: "g", cal: 7.2, p: 0.01, c: 0.0, f: 0.82 },
+  banana: { unit: "g", cal: 0.89, p: 0.011, c: 0.228, f: 0.003 },
+  apple: { unit: "g", cal: 0.52, p: 0.003, c: 0.14, f: 0.002 },
+  pumpkin: { unit: "g", cal: 0.26, p: 0.01, c: 0.065, f: 0.001 },
+  coconut: { unit: "g", cal: 6.6, p: 0.07, c: 0.24, f: 0.65 },
+  pecans: { unit: "g", cal: 6.9, p: 0.09, c: 0.14, f: 0.72 },
+  caramel: { unit: "g", cal: 3.6, p: 0.0, c: 0.75, f: 0.03 },
+  lemon: { unit: "g", cal: 0.29, p: 0.011, c: 0.093, f: 0.003 },
+  cherries: { unit: "g", cal: 0.63, p: 0.01, c: 0.16, f: 0.002 },
+  peaches: { unit: "g", cal: 0.39, p: 0.009, c: 0.095, f: 0.003 },
   salt: { unit: "g", cal: 0, p: 0, c: 0, f: 0 },
 };
 
@@ -111,6 +122,8 @@ const flavorPacks: Record<string, Record<string, Ingredient[]>> = {
     "Biscoff Deluxe": [["biscoff spread", 18]],
     "Cheesecake Supreme": [["pudding mix sugar-free cheesecake", 10]],
     "Choco PB Dream": [["cocoa powder", 8], ["pb2", 12]],
+    "Salted Caramel Gold": [["caramel", 18], ["salt", 0.5]],
+    "Banana Nut Reserve": [["banana", 60], ["pecans", 10]],
   },
 };
 
@@ -130,6 +143,31 @@ const commonFlavors: Record<string, Ingredient[]> = {
   "Biscoff Cheesecake": [["biscoff spread", 14], ["pudding mix sugar-free cheesecake", 6]],
   "Cinnamon Toast": [["cinnamon", 4], ["zero-cal sweetener", 4]],
   "Dark Chocolate": [["cocoa powder", 14]],
+  "Brownie Batter": [["cocoa powder", 12], ["zero-cal sweetener", 5], ["salt", 0.4]],
+  "Strawberry Banana": [["strawberries", 50], ["banana", 50]],
+  "Cherry": [["cherries", 70]],
+  "Lemon": [["lemon", 20], ["zero-cal sweetener", 4]],
+  "Apple Cinnamon": [["apple", 70], ["cinnamon", 4]],
+  "Chocolate Chip": [["sugar-free chocolate chips", 18]],
+  "Apple": [["apple", 80]],
+  "Pumpkin": [["pumpkin", 80], ["cinnamon", 3]],
+  "Carrot Cake": [["cinnamon", 3], ["instant pudding sugar-free vanilla", 8]],
+  "Red Velvet": [["cocoa powder", 8], ["instant pudding sugar-free vanilla", 6]],
+  "Coconut": [["coconut", 12]],
+  "Almond": [["vanilla extract", 3]],
+  "Peach": [["peaches", 80]],
+  "Smores": [["graham crumbs", 14], ["sugar-free chocolate chips", 14], ["mini marshmallows", 8]],
+  "Mint": [["instant pudding sugar-free vanilla", 6]],
+  "Mint Chocolate": [["cocoa powder", 8], ["sugar-free chocolate chips", 12]],
+  "Chocolate Strawberry": [["cocoa powder", 8], ["strawberries", 60]],
+  "Chocolate Banana": [["cocoa powder", 8], ["banana", 50]],
+  "Pecan": [["pecans", 14]],
+  "Caramel": [["caramel", 18]],
+  "Salted Caramel": [["caramel", 18], ["salt", 0.5]],
+  "Banana": [["banana", 70]],
+  "Banana Nut": [["banana", 60], ["pecans", 10]],
+  "Cake Batter": [["instant pudding sugar-free vanilla", 10], ["zero-cal sweetener", 4]],
+  "Birthday Cake": [["instant pudding sugar-free vanilla", 10]],
 };
 
 const commonSwirls: Record<string, Ingredient[]> = {
@@ -146,6 +184,9 @@ const commonToppings: Record<string, Ingredient[]> = {
   "Biscoff Drip": [["biscoff spread", 12]],
   "Cookie Crunch": [["graham crumbs", 14]],
   "Protein Frost": [["greek yogurt nonfat", 30], ["instant pudding sugar-free vanilla", 5]],
+  "Butter": [["butter", 8]],
+  "Irish Butter": [["irish butter", 8]],
+  "Light Butter": [["light butter", 8]],
 };
 
 const recipes: Recipe[] = [
@@ -921,6 +962,80 @@ const recipes: Recipe[] = [
       "For a crunchy Creami topping, add chocolate cereal as a topping after the final spin."
     ]
   }
+  ,
+  {
+    category: "Cakes",
+    name: "Base Protein Cake",
+    clientName: "Protein Cake",
+    servings: 8,
+    base: [["whey isolate", 32], ["oat flour", 42], ["egg whites", 140], ["greek yogurt nonfat", 90], ["almond milk unsweetened", 40], ["baking powder", 6], ["zero-cal sweetener", 10], ["vanilla extract", 4]],
+    method: [
+      "Preheat oven to 350°F and line a 6-inch cake pan or two small layer pans.",
+      "Whisk all dry ingredients first until fully even.",
+      "Whisk wet ingredients separately until smooth.",
+      "Combine wet and dry just until the batter is smooth and slightly thick.",
+      "Mix in the selected flavor ingredients.",
+      "Spread half the batter, build the chosen swirl or core if using, then top with the rest of the batter.",
+      "Bake 20–28 minutes depending on pan depth.",
+      "Cool fully before slicing or stacking layers."
+    ],
+    flavors: {
+      Vanilla: [["instant pudding sugar-free vanilla", 8]],
+      Chocolate: [["cocoa powder", 12]],
+      "Cake Batter": [["instant pudding sugar-free vanilla", 10]],
+      Birthday: [["instant pudding sugar-free vanilla", 8]],
+      Biscoff: [["biscoff spread", 18]],
+      "Red Velvet": [["cocoa powder", 8], ["instant pudding sugar-free vanilla", 6]],
+      "Carrot Cake": [["cinnamon", 4], ["instant pudding sugar-free vanilla", 6]],
+      "Strawberry Banana": [["strawberries", 40], ["banana", 40]],
+      "Salted Caramel": [["caramel", 16], ["salt", 0.5]]
+    },
+    flavorHow: {
+      Vanilla: ["Whisk the extra vanilla pudding mix into the dry ingredients first."],
+      Chocolate: ["Whisk cocoa into the dry ingredients until fully even."],
+      "Cake Batter": ["Whisk the pudding mix into the dry ingredients and keep the batter smooth for a classic cake-batter profile."],
+      Birthday: ["Use the vanilla pudding mix to keep the base sweet and cake-like."],
+      Biscoff: ["Warm slightly and fold into the batter gently so it ribbons without thinning the whole batter too much."],
+      "Red Velvet": ["Whisk the cocoa and vanilla pudding into the dry ingredients first."],
+      "Carrot Cake": ["Whisk cinnamon into the dry ingredients before adding the wet ingredients."],
+      "Strawberry Banana": ["Fold the fruit in last so it does not overbreak the batter."],
+      "Salted Caramel": ["Fold the caramel in gently and keep the salt light but noticeable."]
+    },
+    swirls: {
+      None: [],
+      "Cheesecake Layer": [["greek yogurt nonfat", 55], ["pudding mix sugar-free cheesecake", 6]],
+      "Biscoff Core": [["biscoff spread", 24]],
+      "PB Core": [["pb2", 16], ["almond milk unsweetened", 10]],
+      "Chocolate Ribbon": [["sugar-free syrup", 18], ["cocoa powder", 6]]
+    },
+    swirlBuild: {
+      None: ["No swirl or core selected."],
+      "Cheesecake Layer": ["Mix yogurt and cheesecake pudding until thick.", "Spread it as a middle layer and keep it away from the edges."],
+      "Biscoff Core": ["Freeze small portions first, place in the center of the cake batter, and cover fully."],
+      "PB Core": ["Mix PB2 and almond milk into a thick paste, chill briefly, and place in the middle before sealing with batter."],
+      "Chocolate Ribbon": ["Whisk syrup and cocoa until glossy, then drag a thin ribbon through the middle of the batter."]
+    },
+    toppings: {
+      None: [],
+      "Protein Frosting": [["greek yogurt nonfat", 45], ["instant pudding sugar-free vanilla", 8]],
+      "Chocolate Drip": [["sugar-free syrup", 18], ["cocoa powder", 5]],
+      "Biscoff Drip": [["biscoff spread", 14]],
+      "PB Drip": [["pb2", 12], ["almond milk unsweetened", 10]]
+    },
+    toppingHow: {
+      None: ["No topping selected."],
+      "Protein Frosting": ["Whisk until thick, then spread once the cake is fully cool."],
+      "Chocolate Drip": ["Whisk until glossy and drizzle over the cooled cake."],
+      "Biscoff Drip": ["Warm slightly and drizzle over the cooled cake or between layers."],
+      "PB Drip": ["Whisk until smooth and drizzle over the cooled cake."]
+    },
+    creami: [
+      "Blend the cake base with 160ml extra almond milk and 1g xanthan gum.",
+      "Freeze in a pint for 20–24 hours.",
+      "Spin on Lite Ice Cream and fold cake pieces or frosting in after the respin."
+    ]
+  }
+
 
 ];
 
@@ -962,12 +1077,14 @@ function hasFlavorSignal(...values: string[]) {
     chocolate: joined.includes("chocolate") || joined.includes("brownie") || joined.includes("fudge") || joined.includes("dark"),
     cheesecake: joined.includes("cheesecake"),
     cinnamon: joined.includes("cinnamon"),
-    fruit: joined.includes("strawberry") || joined.includes("blueberry") || joined.includes("fruit") || joined.includes("jam"),
+    fruit: joined.includes("strawberry") || joined.includes("blueberry") || joined.includes("fruit") || joined.includes("jam") || joined.includes("banana") || joined.includes("apple") || joined.includes("peach") || joined.includes("cherry") || joined.includes("lemon"),
+    caramel: joined.includes("caramel"),
+    nutty: joined.includes("pecan") || joined.includes("almond") || joined.includes("coconut") || joined.includes("nut"),
   };
 }
 
 function isBakedCategory(recipeCategory: string) {
-  return ["Brownies", "Muffins", "Cookies", "Cheesecakes", "Donuts", "Pancakes", "Protein Bars", "Mug Cakes", "Skillets"].includes(recipeCategory);
+  return ["Brownies", "Muffins", "Cookies", "Cheesecakes", "Cakes", "Donuts", "Pancakes", "Protein Bars", "Mug Cakes", "Skillets"].includes(recipeCategory);
 }
 
 function applyNoWheySystem(items: Ingredient[], recipeCategory: string, flavor: string, swirl: string, topping: string) {
@@ -989,6 +1106,7 @@ function applyNoWheySystem(items: Ingredient[], recipeCategory: string, flavor: 
       bumpIngredient(map, "egg whites", -12);
       break;
     case "Muffins":
+    case "Cakes":
     case "Donuts":
     case "Pancakes":
     case "Mug Cakes":
@@ -1042,7 +1160,7 @@ function applyGoalSystem(items: Ingredient[], recipeCategory: string, goal: Goal
         bumpIngredient(map, "salt", 0.6);
         bumpIngredient(map, "almond milk unsweetened", -14);
         bumpIngredient(map, "egg whites", -12);
-      } else if (["Muffins", "Donuts", "Pancakes", "Mug Cakes", "Skillets"].includes(recipeCategory)) {
+      } else if (["Muffins", "Cakes", "Donuts", "Pancakes", "Mug Cakes", "Skillets"].includes(recipeCategory)) {
         bumpIngredient(map, "oat flour", 8);
         bumpIngredient(map, "pb2", 6);
         bumpIngredient(map, "greek yogurt nonfat", 8);
@@ -1074,7 +1192,7 @@ function applyGoalSystem(items: Ingredient[], recipeCategory: string, goal: Goal
         bumpIngredient(map, "egg whites", 18);
         bumpIngredient(map, "greek yogurt nonfat", 8);
         bumpIngredient(map, "almond milk unsweetened", -8);
-      } else if (["Muffins", "Donuts", "Pancakes", "Mug Cakes", "Skillets"].includes(recipeCategory)) {
+      } else if (["Muffins", "Cakes", "Donuts", "Pancakes", "Mug Cakes", "Skillets"].includes(recipeCategory)) {
         bumpIngredient(map, "whey isolate", 8);
         bumpIngredient(map, "egg whites", 14);
         bumpIngredient(map, "almond milk unsweetened", -8);
@@ -1092,7 +1210,7 @@ function applyGoalSystem(items: Ingredient[], recipeCategory: string, goal: Goal
         bumpIngredient(map, "pb2", -4);
         bumpIngredient(map, "greek yogurt nonfat", 8);
         bumpIngredient(map, "cocoa powder", 2);
-      } else if (["Muffins", "Donuts", "Pancakes", "Mug Cakes", "Skillets"].includes(recipeCategory)) {
+      } else if (["Muffins", "Cakes", "Donuts", "Pancakes", "Mug Cakes", "Skillets"].includes(recipeCategory)) {
         bumpIngredient(map, "oat flour", -6);
         bumpIngredient(map, "pb2", -4);
         bumpIngredient(map, "greek yogurt nonfat", 10);
@@ -1155,6 +1273,13 @@ function applyFlavorSupportSystem(items: Ingredient[], recipeCategory: string, f
   if (signals.fruit) {
     bumpIngredient(map, "zero-cal sweetener", 2);
   }
+  if (signals.caramel) {
+    bumpIngredient(map, "caramel", 4);
+    bumpIngredient(map, "salt", 0.2);
+  }
+  if (signals.nutty) {
+    bumpIngredient(map, "pb2", 2);
+  }
 
   return mapToItems(map);
 }
@@ -1202,6 +1327,9 @@ function buildSystemNotes(recipeCategory: string, goal: Goal, proteinMode: Prote
 
   if (recipeCategory === "Brownies") {
     notes.push("Brownies now cap excess liquid and force a stronger cocoa + salt base so the flavor is not washed out.");
+  }
+  if (recipeCategory === "Cakes") {
+    notes.push("Cakes now keep a thicker batter path so layers hold shape and the flavor carries through the crumb instead of tasting flat.");
   }
   if (proteinMode === "No Whey") {
     notes.push("No Whey mode now removes whey completely and replaces it with recipe-specific structure and moisture ingredients.");
@@ -1306,7 +1434,7 @@ function exportBrandedHTML(
     </head>
     <body>
       <div class="wrap">
-        <div style="text-align:center;margin-bottom:18px;"><img src="${window.location.origin}/logo-main.png" alt="Sclass Fitness" style="height:64px;max-width:100%;object-fit:contain;" /></div>
+        <div style="text-align:center;margin-bottom:18px;"><img src="${window.location.origin}/logo-main.svg" alt="Sclass Fitness" style="height:64px;max-width:100%;object-fit:contain;" /></div>
         <h1>${title}</h1>
         <div class="small">${BRAND.name} • ${goal}</div>
 
@@ -1343,6 +1471,7 @@ function getRecipeType(recipeName: string) {
   if (n.includes("muffin")) return "muffin";
   if (n.includes("brownie")) return "brownie";
   if (n.includes("cookie")) return "cookie";
+  if (n.includes("cake")) return "cake";
   if (n.includes("cheesecake")) return "cheesecake";
   if (n.includes("creami") || n.includes("ice cream") || n.includes("pint")) return "creami";
   if (n.includes("pudding")) return "pudding";
@@ -1374,6 +1503,10 @@ function getDetailedGuide(recipeName: string, flavor: string, swirl: string, top
     ...(recipeType === "cookie" ? [
       "For cookies, the dough should stay thick enough to scoop, flatten, or roll in your hands.",
       "If the dough softens too much after adding the flavor, let it rest 2–3 minutes before shaping."
+    ] : []),
+    ...(recipeType === "cake" ? [
+      "For cakes, keep the batter smooth and slightly thick so it can support a swirl, layer, or center without sinking.",
+      "Do not overmix once the batter is smooth or the final cake can bake up tight instead of soft."
     ] : []),
     ...(recipeType === "cheesecake" ? [
       "For cheesecake, add the flavor before the egg when possible, then mix the egg in last just until combined.",
@@ -1805,9 +1938,9 @@ function RecipeCard({
     ...commonToppings,
   };
 
-  const flavorKeys = Object.keys(mergedFlavors);
-  const swirlKeys = Object.keys(mergedSwirls);
-  const toppingKeys = Object.keys(mergedToppings);
+  const flavorKeys = Object.keys(mergedFlavors).sort((a, b) => a.localeCompare(b));
+  const swirlKeys = Object.keys(mergedSwirls).sort((a, b) => (a === "None" ? -1 : b === "None" ? 1 : a.localeCompare(b)));
+  const toppingKeys = Object.keys(mergedToppings).sort((a, b) => (a === "None" ? -1 : b === "None" ? 1 : a.localeCompare(b)));
 
   const [flavor, setFlavor] = useState(flavorKeys[0]);
   const [swirl, setSwirl] = useState(swirlKeys[0]);
