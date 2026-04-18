@@ -1895,6 +1895,7 @@ export default function SclassRecipeAppFinal() {
   );
 }
 
+
 function RecipeCard({
   recipe,
   goal,
@@ -1914,73 +1915,123 @@ function RecipeCard({
   savedBuilds: SavedBuild[];
   setSavedBuilds: React.Dispatch<React.SetStateAction<SavedBuild[]>>;
 }) {
-  const scaledBase = useMemo(() => recipe.base, [recipe]);
-  const scaledFlavors = useMemo(() => recipe.flavors, [recipe]);
-  const scaledSwirls = useMemo(() => recipe.swirls, [recipe]);
-  const scaledToppings = useMemo(() => recipe.toppings, [recipe]);
-
-  const packFlavors =
-    pack === "All Packs"
-      ? allPackFlavors
-      : flavorPacks[pack] || {};
-
-  const mergedFlavors = {
-    ...scaledFlavors,
-    ...commonFlavors,
-    ...packFlavors,
-  };
-  const mergedSwirls = {
-    ...scaledSwirls,
-    ...commonSwirls,
-  };
-  const mergedToppings = {
-    ...scaledToppings,
-    ...commonToppings,
+  const packFlavors = pack === "All Packs" ? allPackFlavors : flavorPacks[pack] || {};
+  const globalButterToppings: Record<string, Ingredient[]> = {
+    Butter: [["butter", 8]],
+    "Irish Butter": [["irish butter", 8]],
+    "Light Butter": [["light butter", 8]],
   };
 
-  const flavorKeys = Object.keys(mergedFlavors).sort((a, b) => a.localeCompare(b));
-  const swirlKeys = Object.keys(mergedSwirls).sort((a, b) => (a === "None" ? -1 : b === "None" ? 1 : a.localeCompare(b)));
-  const toppingKeys = Object.keys(mergedToppings).sort((a, b) => (a === "None" ? -1 : b === "None" ? 1 : a.localeCompare(b)));
+  const mergedFlavors = useMemo(
+    () => ({ None: [], ...recipe.flavors, ...commonFlavors, ...packFlavors }),
+    [recipe, pack]
+  );
+  const mergedSwirls = useMemo(
+    () => ({ None: [], ...recipe.swirls, ...commonSwirls }),
+    [recipe]
+  );
+  const mergedToppings = useMemo(
+    () => ({ None: [], ...recipe.toppings, ...commonToppings, ...globalButterToppings }),
+    [recipe]
+  );
 
-  const [flavor, setFlavor] = useState(flavorKeys[0]);
-  const [swirl, setSwirl] = useState(swirlKeys[0]);
-  const [topping, setTopping] = useState(toppingKeys[0]);
+  const sortNoneFirst = (arr: string[]) =>
+    Array.from(new Set(arr)).sort((a, b) => {
+      if (a === "None") return -1;
+      if (b === "None") return 1;
+      return a.localeCompare(b);
+    });
+
+  const flavorKeys = sortNoneFirst(Object.keys(mergedFlavors));
+  const swirlOnlyKeys = sortNoneFirst(
+    Object.keys(mergedSwirls).filter((k) =>
+      k === "None" || /(swirl|ripple|ribbon|layer)/i.test(k)
+    )
+  );
+  const coreOnlyKeys = sortNoneFirst(
+    Object.keys(mergedSwirls).filter((k) =>
+      k === "None" || /(core|center|pocket|cups)/i.test(k)
+    )
+  );
+  const dripKeys = sortNoneFirst(
+    Object.keys(mergedToppings).filter((k) =>
+      k === "None" || /(drip|glaze|frost|top)$/i.test(k)
+    )
+  );
+  const toppingKeys = sortNoneFirst(
+    Object.keys(mergedToppings).filter((k) =>
+      k === "None" || !/(drip|glaze|frost|top)$/i.test(k)
+    )
+  );
+
+  const [flavor1, setFlavor1] = useState(flavorKeys[0] || "None");
+  const [flavor2, setFlavor2] = useState("None");
+  const [splitMode, setSplitMode] = useState<"Single" | "50/50" | "Layered" | "Swirl">("Single");
+  const [swirl, setSwirl] = useState(swirlOnlyKeys[0] || "None");
+  const [core, setCore] = useState(coreOnlyKeys[0] || "None");
+  const [topping, setTopping] = useState(toppingKeys[0] || "None");
+  const [drip, setDrip] = useState(dripKeys[0] || "None");
+  const [cakeLayers, setCakeLayers] = useState("1");
   const [saveName, setSaveName] = useState("");
 
   useEffect(() => {
-    if (!flavorKeys.includes(flavor)) setFlavor(flavorKeys[0]);
-  }, [pack]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!flavorKeys.includes(flavor1)) setFlavor1(flavorKeys[0] || "None");
+    if (!flavorKeys.includes(flavor2)) setFlavor2("None");
+    if (!swirlOnlyKeys.includes(swirl)) setSwirl(swirlOnlyKeys[0] || "None");
+    if (!coreOnlyKeys.includes(core)) setCore(coreOnlyKeys[0] || "None");
+    if (!toppingKeys.includes(topping)) setTopping(toppingKeys[0] || "None");
+    if (!dripKeys.includes(drip)) setDrip(dripKeys[0] || "None");
+  }, [pack, recipe.name]);
 
-  useEffect(() => {
-    if (!swirlKeys.includes(swirl)) setSwirl(swirlKeys[0]);
-    if (!toppingKeys.includes(topping)) setTopping(toppingKeys[0]);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const buildFlavorItems = () => {
+    const first = mergedFlavors[flavor1] || [];
+    const second = mergedFlavors[flavor2] || [];
+    if (flavor2 === "None" || splitMode === "Single") return first;
+    const factors: Record<string, [number, number]> = {
+      "50/50": [0.5, 0.5],
+      Layered: [0.6, 0.6],
+      Swirl: [0.65, 0.5],
+      Single: [1, 0],
+    };
+    const [f1, f2] = factors[splitMode] || [0.5, 0.5];
+    return [...scaleItems(first, f1), ...scaleItems(second, f2)];
+  };
 
-  let flavorList = mergedFlavors[flavor] || [];
+  let flavorList = buildFlavorItems();
   let swirlList = mergedSwirls[swirl] || [];
+  let coreList = mergedSwirls[core] || [];
   let toppingList = mergedToppings[topping] || [];
+  let dripList = mergedToppings[drip] || [];
 
   const isRiceCrispy = recipe.category === "Rice Crispy Treats";
+  const isCake = recipe.category === "Cakes";
+  const cakeLayerCount = isCake ? Number(cakeLayers) : 1;
+  const combinedFlavorLabel =
+    flavor2 !== "None" && splitMode !== "Single"
+      ? `${flavor1} + ${flavor2} (${splitMode})`
+      : flavor1;
+  const combinedSwirlLabel = [swirl, core].filter((x) => x !== "None").join(" • ") || "None";
+  const combinedToppingLabel = [topping, drip].filter((x) => x !== "None").join(" • ") || "None";
+
   const shouldUseChocolateCereal =
-    isRiceCrispy && (
-      flavor.toLowerCase().includes("chocolate") ||
-      recipe.name.toLowerCase().includes("chocolate")
-    );
+    isRiceCrispy && /(chocolate)/i.test(`${combinedFlavorLabel} ${recipe.name}`);
 
   let baseList = shouldUseChocolateCereal
-    ? scaledBase.map(([name, amt]) =>
-        name === "rice krispies cereal" ? ["chocolate crispy rice cereal", amt] as Ingredient : [name, amt]
+    ? recipe.base.map(([name, amt]) =>
+        name === "rice krispies cereal" ? (["chocolate crispy rice cereal", amt] as Ingredient) : [name, amt]
       )
-    : scaledBase;
+    : recipe.base;
 
   baseList = applyGoalSystem(baseList, recipe.category, goal);
-  baseList = applyFlavorSupportSystem(baseList, recipe.category, flavor, swirl, topping);
+  baseList = applyFlavorSupportSystem(baseList, recipe.category, combinedFlavorLabel, combinedSwirlLabel, combinedToppingLabel);
 
   if (proteinMode === "No Whey") {
-    baseList = applyNoWheySystem(baseList, recipe.category, flavor, swirl, topping);
-    flavorList = applyNoWheySystem(flavorList, recipe.category, flavor, swirl, topping);
-    swirlList = applyNoWheySystem(swirlList, recipe.category, flavor, swirl, topping);
-    toppingList = applyNoWheySystem(toppingList, recipe.category, flavor, swirl, topping);
+    baseList = applyNoWheySystem(baseList, recipe.category, combinedFlavorLabel, combinedSwirlLabel, combinedToppingLabel);
+    flavorList = applyNoWheySystem(flavorList, recipe.category, combinedFlavorLabel, combinedSwirlLabel, combinedToppingLabel);
+    swirlList = applyNoWheySystem(swirlList, recipe.category, combinedFlavorLabel, combinedSwirlLabel, combinedToppingLabel);
+    coreList = applyNoWheySystem(coreList, recipe.category, combinedFlavorLabel, combinedSwirlLabel, combinedToppingLabel);
+    toppingList = applyNoWheySystem(toppingList, recipe.category, combinedFlavorLabel, combinedSwirlLabel, combinedToppingLabel);
+    dripList = applyNoWheySystem(dripList, recipe.category, combinedFlavorLabel, combinedSwirlLabel, combinedToppingLabel);
   }
 
   if (isRiceCrispy && proteinMode === "No Whey") {
@@ -1991,19 +2042,35 @@ function RecipeCard({
   }
 
   baseList = applyTextureSystem(baseList, recipe.category, goal, proteinMode);
-  const systemNotes = buildSystemNotes(recipe.category, goal, proteinMode, flavor, swirl, topping);
 
+  if (cakeLayerCount > 1) {
+    baseList = scaleItems(baseList, cakeLayerCount);
+    flavorList = scaleItems(flavorList, cakeLayerCount);
+    swirlList = scaleItems(swirlList, cakeLayerCount);
+    coreList = scaleItems(coreList, cakeLayerCount);
+    toppingList = scaleItems(toppingList, cakeLayerCount);
+    dripList = scaleItems(dripList, cakeLayerCount);
+  }
+
+  const systemNotes = buildSystemNotes(recipe.category, goal, proteinMode, combinedFlavorLabel, combinedSwirlLabel, combinedToppingLabel);
   const baseMacros = calcMacros(baseList);
   const flavorMacros = calcMacros(flavorList);
-  const swirlMacros = calcMacros(swirlList);
-  const toppingMacros = calcMacros(toppingList);
+  const swirlMacros = calcMacros([...swirlList, ...coreList]);
+  const toppingMacros = calcMacros([...toppingList, ...dripList]);
   const totalMacros = addMacros(addMacros(addMacros(baseMacros, flavorMacros), swirlMacros), toppingMacros);
+  const effectiveServings = recipe.servings * cakeLayerCount;
 
   const detailTitle = clientMode ? recipe.clientName : recipe.name;
-  const detailedGuide = getDetailedGuide(recipe.name, flavor, swirl, topping);
-  const flavorMethodItems = recipe.flavorHow?.[flavor] || detailedGuide.flavorGuide;
-  const swirlMethodItems = recipe.swirlBuild?.[swirl] || detailedGuide.swirlGuide;
-  const toppingMethodItems = recipe.toppingHow?.[topping] || detailedGuide.toppingGuide;
+  const detailedGuide = getDetailedGuide(recipe.name, combinedFlavorLabel, combinedSwirlLabel, combinedToppingLabel);
+
+  const collectSteps = (mapObj: Record<string, string[]>, selections: string[], fallback: string[]) => {
+    const gathered = selections.flatMap((selection) => (selection !== "None" ? (mapObj?.[selection] || []) : []));
+    return gathered.length ? gathered : fallback;
+  };
+
+  const flavorMethodItems = collectSteps(recipe.flavorHow, [flavor1, flavor2], detailedGuide.flavorGuide);
+  const swirlMethodItems = collectSteps(recipe.swirlBuild, [swirl, core], detailedGuide.swirlGuide);
+  const toppingMethodItems = collectSteps(recipe.toppingHow, [topping, drip], detailedGuide.toppingGuide);
 
   const saveBuild = () => {
     const newBuild: SavedBuild = {
@@ -2011,9 +2078,9 @@ function RecipeCard({
       customName: saveName.trim() || `${recipe.clientName} Build`,
       recipeName: recipe.name,
       goal,
-      flavor,
-      swirl,
-      topping,
+      flavor: combinedFlavorLabel,
+      swirl: combinedSwirlLabel,
+      topping: combinedToppingLabel,
     };
     setSavedBuilds([newBuild, ...savedBuilds]);
     setSaveName("");
@@ -2023,16 +2090,16 @@ function RecipeCard({
     exportBrandedHTML(
       detailTitle,
       goal,
-      recipe.servings,
+      effectiveServings,
       totalMacros,
-      divideMacros(totalMacros, recipe.servings),
-      flavor,
-      swirl,
-      topping,
+      divideMacros(totalMacros, effectiveServings),
+      combinedFlavorLabel,
+      combinedSwirlLabel,
+      combinedToppingLabel,
       baseList,
       flavorList,
-      swirlList,
-      toppingList,
+      [...swirlList, ...coreList],
+      [...toppingList, ...dripList],
       recipe.method,
       flavorMethodItems,
       swirlMethodItems,
@@ -2049,30 +2116,75 @@ function RecipeCard({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-bold text-yellow-300">{detailTitle}</h2>
-                <div className="mt-1 text-sm text-neutral-400">Servings: {recipe.servings}</div>
-                {recipe.category === "Rice Crispy Treats" && (
-                  <div className="mt-1 text-xs text-neutral-500">
-                    Protein source: {proteinMode}. Chocolate builds auto-switch to chocolate crispy rice cereal.
-                  </div>
-                )}
+                <div className="mt-1 text-sm text-neutral-400">
+                  Servings: {effectiveServings}{isCake ? ` • ${cakeLayerCount} layer${cakeLayerCount > 1 ? "s" : ""}` : ""}
+                </div>
               </div>
               <img src={BRAND.logos.mark} alt="" className="h-16 w-16 object-contain opacity-95" />
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <AppSelect value={flavor} onChange={(e) => setFlavor(e.target.value)} options={flavorKeys} />
-              <AppSelect value={swirl} onChange={(e) => setSwirl(e.target.value)} options={swirlKeys} />
-              <AppSelect value={topping} onChange={(e) => setTopping(e.target.value)} options={toppingKeys} />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <ControlCard label="Flavor 1">
+                <AppSelect value={flavor1} onChange={(e) => setFlavor1(e.target.value)} options={flavorKeys} />
+              </ControlCard>
+              <ControlCard label="Flavor 2">
+                <AppSelect value={flavor2} onChange={(e) => setFlavor2(e.target.value)} options={flavorKeys} />
+              </ControlCard>
+              <ControlCard label="Split / Build Style">
+                <AppSelect value={splitMode} onChange={(e) => setSplitMode(e.target.value as any)} options={["Single", "50/50", "Layered", "Swirl"]} />
+              </ControlCard>
+              {isCake ? (
+                <ControlCard label="Cake Layers">
+                  <AppSelect value={cakeLayers} onChange={(e) => setCakeLayers(e.target.value)} options={["1", "2", "3"]} />
+                </ControlCard>
+              ) : (
+                <ControlCard label="Protein Source">
+                  <div className="h-12 flex items-center rounded-2xl border border-yellow-700/40 bg-neutral-900 px-4 text-sm text-neutral-300">{proteinMode}</div>
+                </ControlCard>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <ControlCard label="Swirls (A–Z)">
+                <AppSelect value={swirl} onChange={(e) => setSwirl(e.target.value)} options={swirlOnlyKeys} />
+              </ControlCard>
+              <ControlCard label="Cores (A–Z)">
+                <AppSelect value={core} onChange={(e) => setCore(e.target.value)} options={coreOnlyKeys} />
+              </ControlCard>
+              <ControlCard label="Toppings (A–Z)">
+                <AppSelect value={topping} onChange={(e) => setTopping(e.target.value)} options={toppingKeys} />
+              </ControlCard>
+              <ControlCard label="Drips / Frosts (A–Z)">
+                <AppSelect value={drip} onChange={(e) => setDrip(e.target.value)} options={dripKeys} />
+              </ControlCard>
             </div>
           </div>
         </div>
 
         <div className="space-y-6 p-5 sm:p-6">
+          {isCake && (
+            <Panel title="Cake Preview">
+              <div className="flex min-h-[190px] items-end justify-center gap-3 rounded-2xl bg-neutral-900/70 p-6">
+                <div className="flex flex-col items-center gap-2">
+                  {Array.from({ length: cakeLayerCount }).map((_, i) => (
+                    <div key={i} className="w-48 rounded-xl border border-yellow-700/30 bg-gradient-to-r from-yellow-700/20 to-yellow-500/10 px-3 py-3 text-center text-xs text-neutral-100 shadow-lg">
+                      <div className="font-semibold text-yellow-300">Layer {cakeLayerCount - i}</div>
+                      <div>{i % 2 === 0 ? flavor1 : flavor2 !== "None" ? flavor2 : flavor1}</div>
+                    </div>
+                  ))}
+                  {core !== "None" && <div className="text-xs text-neutral-400">Core: {core}</div>}
+                  {swirl !== "None" && <div className="text-xs text-neutral-400">Swirl: {swirl}</div>}
+                  {combinedToppingLabel !== "None" && <div className="text-xs text-neutral-400">Finish: {combinedToppingLabel}</div>}
+                </div>
+              </div>
+            </Panel>
+          )}
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard title="Base Batch" value={fmt(baseMacros)} icon={<ChefHat className="h-4 w-4" />} />
             <StatCard title="Final Batch" value={fmt(totalMacros)} icon={<Sparkles className="h-4 w-4" />} />
-            <StatCard title="Per Serving" value={fmt(divideMacros(totalMacros, recipe.servings))} icon={<Calculator className="h-4 w-4" />} />
-            <StatCard title="Build" value={`${flavor} • ${swirl} • ${topping} • ${proteinMode}`} icon={<Layers3 className="h-4 w-4" />} />
+            <StatCard title="Per Serving" value={fmt(divideMacros(totalMacros, effectiveServings))} icon={<Calculator className="h-4 w-4" />} />
+            <StatCard title="Build" value={`${combinedFlavorLabel} • ${combinedSwirlLabel} • ${combinedToppingLabel} • ${proteinMode}`} icon={<Layers3 className="h-4 w-4" />} />
           </div>
 
           <div className="rounded-2xl border border-yellow-700/30 bg-yellow-500/10 p-4">
@@ -2104,47 +2216,23 @@ function RecipeCard({
             <Panel title="Ingredients Breakdown">
               <div className="space-y-3 text-sm">
                 <IngredientGroup title="Base" items={baseList} />
-                <IngredientGroup title={`Flavor (${flavor})`} items={flavorList} />
-                <IngredientGroup title={`Swirl / Core (${swirl})`} items={swirlList} />
-                <IngredientGroup title={`Topping (${topping})`} items={toppingList} />
+                <IngredientGroup title={`Flavor Build (${combinedFlavorLabel})`} items={flavorList} />
+                <IngredientGroup title={`Swirls (${swirl})`} items={swirlList} />
+                <IngredientGroup title={`Cores (${core})`} items={coreList} />
+                <IngredientGroup title={`Toppings (${topping})`} items={toppingList} />
+                <IngredientGroup title={`Drips / Frosts (${drip})`} items={dripList} />
               </div>
             </Panel>
 
             <Panel title="Build Deltas">
               <div className="space-y-3 text-sm">
-                <DeltaRow label={`Flavor: ${flavor}`} batch={fmt(flavorMacros)} per={fmt(divideMacros(flavorMacros, recipe.servings))} />
-                <DeltaRow label={`Swirl / Core: ${swirl}`} batch={fmt(swirlMacros)} per={fmt(divideMacros(swirlMacros, recipe.servings))} />
-                <DeltaRow label={`Topping: ${topping}`} batch={fmt(toppingMacros)} per={fmt(divideMacros(toppingMacros, recipe.servings))} />
+                <DeltaRow label={`Flavor: ${combinedFlavorLabel}`} batch={fmt(flavorMacros)} per={fmt(divideMacros(flavorMacros, effectiveServings))} />
+                <DeltaRow label={`Swirls + Cores: ${combinedSwirlLabel}`} batch={fmt(swirlMacros)} per={fmt(divideMacros(swirlMacros, effectiveServings))} />
+                <DeltaRow label={`Toppings + Drips: ${combinedToppingLabel}`} batch={fmt(toppingMacros)} per={fmt(divideMacros(toppingMacros, effectiveServings))} />
               </div>
             </Panel>
           </div>
 
-
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <Panel title="Elite System Adjustments" icon={<Wand2 className="h-4 w-4" />}>
-              <div className="space-y-4 text-sm text-neutral-200">
-                <GuideSection title="What the app changed for this build" items={systemNotes.notes} />
-                <GuideSection title="What to watch during prep" items={systemNotes.warnings} />
-              </div>
-            </Panel>
-
-            <Panel title="Macro Logic Snapshot" icon={<BookOpen className="h-4 w-4" />}>
-              <div className="space-y-3 text-sm text-neutral-200">
-                <div className="rounded-2xl border border-yellow-700/20 bg-neutral-950/70 p-3">
-                  <div className="mb-2 font-medium text-yellow-300">Goal engine</div>
-                  <p>{goal} mode is now recipe-specific instead of using a simple full-recipe multiplier.</p>
-                </div>
-                <div className="rounded-2xl border border-yellow-700/20 bg-neutral-950/70 p-3">
-                  <div className="mb-2 font-medium text-yellow-300">Protein engine</div>
-                  <p>{proteinMode === "No Whey" ? "Whey is fully removed and replaced with structure-support ingredients." : "Whey stays in and the recipe keeps the higher-protein build path."}</p>
-                </div>
-                <div className="rounded-2xl border border-yellow-700/20 bg-neutral-950/70 p-3">
-                  <div className="mb-2 font-medium text-yellow-300">Flavor engine</div>
-                  <p>Base flavor support is added when the build uses bold profiles like Biscoff, PB, chocolate, cheesecake, cinnamon, or fruit.</p>
-                </div>
-              </div>
-            </Panel>
-          </div>
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <Panel title="Main Method">
               <ol className="list-decimal space-y-3 pl-5 text-sm text-neutral-200">
@@ -2171,7 +2259,7 @@ function RecipeCard({
                 </ul>
               </Panel>
 
-              <Panel title="Topping Method">
+              <Panel title="Topping / Drip Method">
                 <ul className="list-disc space-y-3 pl-5 text-sm text-neutral-200">
                   {toppingMethodItems.map((step) => (
                     <li key={step}>{step}</li>
@@ -2190,41 +2278,29 @@ function RecipeCard({
           </div>
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <Panel title="Detailed Build Guide">
-              <div className="space-y-5 text-sm text-neutral-200">
-                <GuideSection title={`How to add the flavor: ${flavor}`} items={detailedGuide.flavorGuide} />
-                <GuideSection title={swirl === "None" ? "Swirl / core guide" : `How to build the ${swirl}`} items={detailedGuide.swirlGuide} />
-                <GuideSection title={topping === "None" ? "Topping guide" : `How to finish with ${topping}`} items={detailedGuide.toppingGuide} />
+            <Panel title="Elite System Adjustments">
+              <div className="space-y-4 text-sm text-neutral-200">
+                <GuideSection title="What changed in this build" items={systemNotes} />
+                <GuideSection title="How to add the flavor" items={detailedGuide.flavorGuide} />
+                <GuideSection title="How to build the swirl / core" items={detailedGuide.swirlGuide} />
+                <GuideSection title="How to finish the topping / drip" items={detailedGuide.toppingGuide} />
               </div>
             </Panel>
 
-            <Panel title="Texture & Core Tips">
+            <Panel title="Texture & Macro Disclaimer">
               <div className="space-y-4 text-sm text-neutral-200">
-                <GuideSection title="Important technique notes" items={detailedGuide.textureTips} />
-                <div className="rounded-2xl border border-yellow-700/20 bg-neutral-950/70 p-3">
-                  <div className="mb-2 font-medium text-yellow-300">Best order to build</div>
-                  <p>1. Mix base completely smooth.</p>
-                  <p>2. Add flavor ingredients.</p>
-                  <p>3. If using a core, freeze or thicken it first.</p>
-                  <p>4. Add half the batter, place the core or swirl, then cover or drag through lightly.</p>
-                  <p>5. Cook, chill, or freeze based on the recipe.</p>
-                  <p>6. Finish with topping only once the texture is set enough to hold it.</p>
+                <GuideSection title="Texture notes" items={detailedGuide.textureTips} />
+                <div className="rounded-2xl border border-yellow-700/20 bg-neutral-950/70 p-4 text-sm leading-6 text-neutral-300">
+                  <div className="mb-2 font-medium text-yellow-300">Macro disclaimer</div>
+                  <p>
+                    Macros in this app are calculated from the ingredient database built into the system using standard estimated nutrition values per gram or per unit.
+                    They are best used as a consistent coaching estimate, not as a lab-tested guarantee. Brand differences, moisture loss during baking,
+                    fruit size, spread amounts, cereal variation, and how much topping or drip is actually used can all change the real final macros.
+                  </p>
                 </div>
               </div>
             </Panel>
           </div>
-
-          {clientMode && (
-            <div className="rounded-2xl border border-yellow-700/30 bg-yellow-500/10 p-4 text-sm text-neutral-200">
-              <div className="mb-2 font-semibold text-yellow-300">Simple client instructions</div>
-              <p>1. Pick recipe → flavor → swirl/core → topping</p>
-              <p>2. Follow BASE ingredients first</p>
-              <p>3. Add FLAVOR ingredients</p>
-              <p>4. Build SWIRL/CORE exactly as instructed</p>
-              <p>5. Apply TOPPING after cooking</p>
-              <p>6. Use per-serving macros</p>
-            </div>
-          )}
         </div>
       </div>
     </motion.div>
